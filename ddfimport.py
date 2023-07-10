@@ -48,11 +48,12 @@ def ddf_push_branch(token:str):
   print('executing ddf_push_branch...')
   try:
     os.chdir(checked_out_path)
+    print(f'pushing to {checked_out_branch}')
   except NameError:
     print(f"Branch not checked out for editing!")
     return
 
-  shellcmd(f'git push https://{token}@github.com/tnc-br/ddf_common.git test')
+  shellcmd(f'git push https://{token}@github.com/tnc-br/ddf_common.git {checked_out_branch}')
   os.chdir("/content")
 
 # performs a git add . and commits with the given message.
@@ -116,12 +117,18 @@ def ddf_import_common(email:str = "", branch_name:str = ""):
       sys.path.insert(0, checked_out_path)
     print('main branch checked out as readonly. You may now use ddf_common imports')
   else:
+    cloned_in_gdrive = True
     if (len(email) == 0):
       print('No email provided.')
       return
     if not os.path.isdir("/content/gdrive"):
       from google.colab import drive
-      drive.mount("/content/gdrive")
+      try:
+        drive.mount("/content/gdrive")
+      except:
+        # The makedirs will create the path without gdrive mounted and it will fall back to local
+        # We use this flag to print a BIG warning at the end.
+        cloned_in_gdrive = False
 
     os.makedirs(f"/content/gdrive/MyDrive/{branch_name}", exist_ok=True)
     os.chdir(f"/content/gdrive/MyDrive/{branch_name}")
@@ -137,6 +144,9 @@ def ddf_import_common(email:str = "", branch_name:str = ""):
     if checked_out_path not in sys.path:
       sys.path.insert(0,checked_out_path)
     print(f'{checked_out_branch} branch checked out at "{checked_out_path}". You may now use ddf_common imports and change common files.')
+    if not cloned_in_gdrive:
+      print('WARNING WARNING. Shared files not checked out in google drive. Changes may be lost if edited.')
+      print('If you are using a local runtime, this may be OK. But be careful!')
     ddf_commit_pane()
 
 # The entry point for showing the source control pane that allows a git clone,
