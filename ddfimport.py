@@ -98,7 +98,7 @@ def ddf_import_common(email:str = "", branch_name:str = ""):
     print(f"Branch {checked_out_branch} already checked out.")
     print(f"Remember to reload your imports with `importlib.reload(module)`.")
   except NameError:
-    checked_out_branch = branch_name if branch_name != "" else "main"
+    checked_out_branch = branch_name if branch_name != "" else "PRD"
     checked_out_path = ""
 
   if (len(checked_out_path) > 0):
@@ -107,15 +107,17 @@ def ddf_import_common(email:str = "", branch_name:str = ""):
     if os.path.isdir('/tmp/ddf_common'):
       shutil.rmtree( '/tmp/ddf_common' )
     os.chdir("/tmp")
-    if not shellcmd(f'git clone --quiet https://github.com/tnc-br/ddf_common.git || echo "Repository already exists."'):
+    if not shellcmd(f'git clone -b PRD --quiet https://github.com/tnc-br/ddf_common.git || echo "Repository already exists."'):
       os.chdir("/content")
       return
     os.chdir("/content")
-    checked_out_branch = "main"
+    checked_out_branch = "PRD"
     checked_out_path = '/tmp/ddf_common'
     if checked_out_path not in sys.path:
       sys.path.insert(0, checked_out_path)
-    print('main branch checked out as readonly. You may now use ddf_common imports')
+    print('PRD branch checked out as readonly. You may now use ddf_common imports')
+    print('Use the UI below to choose a different branch instead.')
+    ddf_source_control_pane()
   else:
     cloned_in_gdrive = True
     if (len(email) == 0):
